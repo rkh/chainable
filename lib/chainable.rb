@@ -25,14 +25,12 @@ module Chainable
   end
 
   def auto_chain &block
-    raise ArgumentError, "no block given" unless block_given?
-    result = nil
     class << self
       chain_method :method_added do |name|
         Chainable.skip_chain { chain_method name }
       end
     end
-    result = block.call
+    result = yield
     class << self
       remove_method :method_added
     end

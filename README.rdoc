@@ -30,7 +30,6 @@ the module in Foo and  overwrite foo.
 There also is auto_chain, which is rather a proof of concept:
 
   class Foo
-
     auto_chain do
 
       def foo
