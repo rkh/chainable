@@ -1,4 +1,4 @@
-warn  "Warning: you just sold you soul to the devil."
+warn  "Warning: you just sold your soul to the devil."
 
 begin
   require "ruby2ruby"
