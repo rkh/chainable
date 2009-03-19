@@ -31,7 +31,9 @@ module Chainable
       chain_method :method_added do |name|
         Chainable.skip_chain { chain_method name }
       end
-      result = block.call
+    end
+    result = block.call
+    class << self
       remove_method :method_added
     end
     result
