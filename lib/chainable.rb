@@ -29,6 +29,26 @@ module Chainable
     block ||= Proc.new { super }
     define_method(name, &block)
   end
+
+  def auto_chain &block
+    raise ArgumentError, "no block given" unless block_given?
+    result = nil
+    class_eval do
+      class << self
+        chain_method :method_added do |name|
+          return if @__chaining__
+          @__chaining__ = true
+          chain_method name
+          @__chaining__ = false
+        end
+      end
+      result = block.call
+      class << self
+        remove_method :method_added
+      end
+    end
+    result
+  end
     
 end
 
