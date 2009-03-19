@@ -9,7 +9,7 @@ module Chainable
     @auto_chain = false
   end
 
-  def chain_method(name, optimize = true, &block)
+  def chain_method(name, &block)
     name = name.to_s
     if instance_methods(false).include? name
       begin
