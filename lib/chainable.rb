@@ -1,5 +1,4 @@
 require "ruby2ruby"
-require "thread"
 
 module Chainable
 
