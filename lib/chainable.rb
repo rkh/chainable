@@ -54,6 +54,5 @@ end
 
 Module.class_eval do
   include Chainable
-  #private "auto_chain", "chain_method"
-  private "chain_method"
+  private "auto_chain", "chain_method"
 end

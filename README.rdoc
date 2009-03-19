@@ -1,0 +1,48 @@
+"Thou shalt not use alias_method_chain!"
+- http://yehudakatz.com/2009/03/06/alias_method_chain-in-models/
+- http://yehudakatz.com/2009/01/18/other-ways-to-wrap-a-method/
+- http://www.codefluency.com/articles/2009/01/03/wrapping-a-method-in-ruby
+
+This is mainly playing with ruby.
+It currently gives you two methdi: chain_method, wich is something like an
+alias_method_chain replacement using inheritance.
+
+Example:
+
+  class Foo
+
+    def foo
+     10
+    end
+
+    chain_method :foo do
+      super + 3
+    end
+
+  end
+
+This will create a module, move the old foo from Foo to the module, include
+the module in Foo and  overwrite foo.
+
+There also is auto_chain, which is rather a proof of concept:
+
+  class Foo
+
+    auto_chain do
+
+      def foo
+        10
+      end
+
+      def foo
+        super + 1
+      end
+
+      def foo
+        super ** 2
+      end
+
+    end
+  end
+
+  puts Foo.new.foo # => 121
