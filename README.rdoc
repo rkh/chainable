@@ -1,3 +1,6 @@
+This is not a serious project. You should not use this. This is just some
+ruby abuse. It even got the Evil of the Day Award™ from zenspider.
+
 "Thou shalt not use alias_method_chain!"
 - http://yehudakatz.com/2009/03/06/alias_method_chain-in-models/
 - http://yehudakatz.com/2009/01/18/other-ways-to-wrap-a-method/
