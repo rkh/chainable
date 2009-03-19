@@ -1,3 +1,5 @@
+warn  "Warning: you just sold you soul to the devil."
+
 begin
   require "ruby2ruby"
 rescue LoadError
