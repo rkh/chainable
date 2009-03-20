@@ -65,3 +65,10 @@ Of course you can do this with any class (or module):
       MyStuff::Enumerator.new self, :each
     end
   end
+
+== Installation
+Add github gems, if you haven't already:
+  gem sources -a http://gems.github.com
+
+Install gem:
+  gem install rkh-chainable
