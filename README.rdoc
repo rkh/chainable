@@ -3,13 +3,13 @@
 This is heavy ruby abuse. It even got the Evil of the Day Award™ from zenspider.
 
 == Thou shalt not use alias_method_chain!
-- http://yehudakatz.com/2009/03/06/alias_method_chain-in-models/
-- http://yehudakatz.com/2009/01/18/other-ways-to-wrap-a-method/
+- http://yehudakatz.com/2009/03/06/alias_method_chain-in-models
+- http://yehudakatz.com/2009/01/18/other-ways-to-wrap-a-method
 - http://www.codefluency.com/articles/2009/01/03/wrapping-a-method-in-ruby
 
 == What it does
 Chainable is an alternative to alias_method_chain, that uses inheritance, rather
-than aliasing. Instead it does the following when "chaining" a method:
+than aliasing. It does the following when "chaining" a method:
 
 - copy the original method to a new model
 - include the model
@@ -17,8 +17,8 @@ than aliasing. Instead it does the following when "chaining" a method:
 
 Thus you can use super and keep your method list clean, too!
 It even supports a (rather dangerous) auto chaining mode, so you do not have
-to explicitly chain a method, but chain a method when ever it would be
-overwritten.
+to explicitly chain a method, but chain a method whenever it would be
+overwritten intead.
 
 
 Example:
