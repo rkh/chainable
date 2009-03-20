@@ -18,7 +18,7 @@ than aliasing. It does the following when "chaining" a method:
 Thus you can use super and keep your method list clean, too!
 It even supports a (rather dangerous) auto chaining mode, so you do not have
 to explicitly chain a method, but chain a method whenever it would be
-overwritten intead.
+overwritten instead.
 
 
 Example:
