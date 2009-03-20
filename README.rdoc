@@ -1,14 +1,25 @@
-This is not a serious project. You should not use this. This is just some
-ruby abuse. It even got the Evil of the Day Award™ from zenspider.
+<b>A word of warning:</b>
 
-"Thou shalt not use alias_method_chain!"
+This is heavy ruby abuse. It even got the Evil of the Day Award™ from zenspider.
+
+== Thou shalt not use alias_method_chain!
 - http://yehudakatz.com/2009/03/06/alias_method_chain-in-models/
 - http://yehudakatz.com/2009/01/18/other-ways-to-wrap-a-method/
 - http://www.codefluency.com/articles/2009/01/03/wrapping-a-method-in-ruby
 
-This is mainly playing with ruby.
-It currently gives you two methdi: chain_method, wich is something like an
-alias_method_chain replacement using inheritance.
+== What it does
+Chainable is an alternative to alias_method_chain, that uses inheritance, rather
+than aliasing. Instead it does the following when "chaining" a method:
+
+- copy the original method to a new model
+- include the model
+- overwrite the method
+
+Thus you can use super and keep your method list clean, too!
+It even supports a (rather dangerous) auto chaining mode, so you do not have
+to explicitly chain a method, but chain a method when ever it would be
+overwritten.
+
 
 Example:
 
@@ -18,33 +29,39 @@ Example:
      10
     end
 
+    # now chain to foo
     chain_method :foo do
       super + 3
     end
 
-  end
-
-This will create a module, move the old foo from Foo to the module, include
-the module in Foo and  overwrite foo.
-
-There also is auto_chain, which is rather a proof of concept:
-
-  class Foo
+    # or turn on auto chaining
     auto_chain do
 
-      def foo
+      def bar
         10
       end
 
-      def foo
+      def bar
         super + 1
       end
 
-      def foo
+      def bar
         super ** 2
       end
 
     end
   end
 
-  puts Foo.new.foo # => 121
+  f = Foo.new
+  puts f.foo # => 13
+  puts f.bar # => 121
+
+Of course you can do this with any class (or module):
+
+  Array.class_eval do
+    chain_method :each
+    def each
+      return super if block_given? or RUBY_VERSION >= "1.8.7"
+      MyStuff::Enumerator.new self, :each
+    end
+  end
