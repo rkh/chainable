@@ -66,6 +66,14 @@ Of course you can do this with any class (or module):
     end
   end
 
+== Benchmark
+chain_method tends do produce slightly faster methods than alias_method_chain:
+                                           user     system      total        real
+  chainable (define_method)            0.160000   0.010000   0.170000 (  0.183363)
+  chainable (def & eval)               0.170000   0.010000   0.180000 (  0.177084)
+  alias_method_chain (define_method)   0.570000   0.030000   0.600000 (  0.607330)
+  alias_method_chain (def & eval)      0.170000   0.020000   0.190000 (  0.190048)
+
 == Installation
 Add github gems, if you haven't already:
   gem sources -a http://gems.github.com
