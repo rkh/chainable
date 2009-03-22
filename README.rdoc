@@ -73,7 +73,7 @@ Of course you can do this with any class (or module):
   end
 
 Note that there is a speed advantage when using chain_method without a block
-and doing a "def", since chain_method will will use define_method if a block is
+and doing a "def", since chain_method will use define_method if a block is
 given, which produces slower methods (but makes the method a real closure).
 
 == Benchmark
