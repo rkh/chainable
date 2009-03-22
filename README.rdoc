@@ -50,6 +50,12 @@ Example:
       end
 
     end
+
+    # or chain multiple methods at once
+    chain_method :foo, :bar do
+      super.to_s
+    end
+
   end
 
   f = Foo.new
@@ -65,6 +71,10 @@ Of course you can do this with any class (or module):
       MyStuff::Enumerator.new self, :each
     end
   end
+
+Note that there is a speed advantage when using chain_method without a block
+and doing a "def", since chain_method will will use define_method if a block is
+given, which produces slower methods (but makes the method a real closure).
 
 == Benchmark
 chain_method tends do produce slightly faster methods than alias_method_chain:
