@@ -1,5 +1,5 @@
 require "benchmark"
-require "../lib/chainable"
+require "lib/chainable"
 require "active_support"
 
 class BenchmarkChainable
