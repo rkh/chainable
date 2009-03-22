@@ -4,7 +4,7 @@ require "active_support"
 
 class BenchmarkChain
   CHAIN_LENGTH = 1000
-  CALL_TIMES = 100
+  CALL_TIMES = 1000
   class << self
     def bm1(x)
       obj = new
@@ -15,25 +15,26 @@ class BenchmarkChain
       x.report("#{@name} (def & eval)") { CALL_TIMES.times { obj.bm2 } }
     end
   end
-  define_method(:bm1) { 100 }
-  def bm2; 100; end
+  define_method(:bm1) { }
+  def bm2; end
 end
 
 class BenchmarkChainable < BenchmarkChain
   @name = "chainable"
   CHAIN_LENGTH.times do
-    chain_method(:bm1) { super * 2 }
+    chain_method(:bm1) { super }
     chain_method(:bm2)
-    def bm2; super * 2; end
+    def bm2; super; end
   end
 end
 
 class BenchmarkAliasMethodChain < BenchmarkChain
   @name = "alias_method_chain"
   CHAIN_LENGTH.times do |i|
-    define_method("bm1_with_#{i}") { send("bm1_without_#{i}") * 2 }
+    method_without = "bm1_without_#{i}"
+    define_method("bm1_with_#{i}") { send(method_without) }
     alias_method_chain :bm1, i.to_s
-    eval "def bm2_with_#{i}; bm2_without_#{i} * 2; end"
+    eval "def bm2_with_#{i}; bm2_without_#{i}; end"
     alias_method_chain :bm2, i.to_s
   end
 end
