@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name             = "chainable"
-  s.version          = "0.0.1"
+  s.version          = "0.0.2"
   s.authors          = ["Konstantin Haase"]
   s.date             = "2009-03-20"
   s.description      = "never use alias_method_chain, again"

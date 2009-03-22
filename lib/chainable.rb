@@ -14,8 +14,9 @@ module Chainable
   # Maybe that is not what you want, as methods defined by def tend to be
   # faster. If that is the case, simply don't pass the block and call def
   # after chain_method instead.
-  def chain_method(name, &block)
-    name = name.to_s
+  def chain_method(*names, &block)
+    raise ArgumentError, "no method name given" if names.empty?
+    name = names.shift.to_s
     if instance_methods(false).include? name
       begin
         code = Ruby2Ruby.translate self, name
@@ -27,6 +28,7 @@ module Chainable
     end
     block ||= Proc.new { super }
     define_method(name, &block)
+    chain_method(*names, &block) unless names.empty?
   end
 
   # If you define a method inside a block passed to auto_chain, chain_method

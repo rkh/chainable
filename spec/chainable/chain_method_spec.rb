@@ -60,6 +60,17 @@ describe Chainable do
     @an_instance.to_i.should == @original_results["to_i"] + 20
   end
 
+  it "should allow passing multiple method names to chain_methdo" do
+    @a_class.class_eval do
+      chain_method :random, :foo2
+      chain_method(:foo, :to_i) { super.to_s }
+    end
+    @an_instance.random.should == @original_results["random"]
+    @an_instance.foo2.should == @original_results["foo2"]
+    @an_instance.foo.should == @original_results["foo"].to_s
+    @an_instance.to_i.should == @original_results["to_i"].to_s
+  end
+
   it "should keep inheritance intact" do
     a_module = Module.new do
       define_method(:inspect) { "some inspect result" }
