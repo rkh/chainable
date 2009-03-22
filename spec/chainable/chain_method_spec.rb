@@ -60,7 +60,7 @@ describe Chainable do
     @an_instance.to_i.should == @original_results["to_i"] + 20
   end
 
-  it "should allow passing multiple method names to chain_methdo" do
+  it "should allow passing multiple method names to chain_method" do
     @a_class.class_eval do
       chain_method :random, :foo2
       chain_method(:foo, :to_i) { super.to_s }
