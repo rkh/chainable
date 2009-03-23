@@ -46,6 +46,28 @@ module Chainable
     @parse_tree = ParseTree.new
   end
 
+  def self.try_merge(klass, *names, &wrapper)
+    names.reject do |name|
+      begin
+        klass.class_eval { merge_method(name, &wrapper) }
+        true
+      rescue ArgumentError
+        false
+      end
+    end
+  end
+
+  def self.copy_method(source_class, target_class, name)
+    begin
+      target_class.class_eval Ruby2Ruby.translate(source_class, name)
+    rescue NameError
+      m = source_class.instance_method name
+      target_class.class_eval do
+        define_method(name) { |*a, &b| m.bind(self).call(*a, &b) }
+      end
+    end
+  end
+
   # This will "chain" a method (read: push it to a module and include it).
   # If a block is given, it will do a define_method(name, &block).
   # Maybe that is not what you want, as methods defined by def tend to be
@@ -53,26 +75,13 @@ module Chainable
   # after chain_method instead.
   def chain_method(*names, &block)
     options = names.grep(Hash).inject({}) { |a, b| a.merge names.delete(b) }
-    if options[:try_merge]
-      names.reject! do |name|
-        begin
-          merge_method(name, &block)
-          true
-        rescue ArgumentError
-          false
-        end
-      end
-    end
+    names = Chainable.try_merge(self, *names, &block) if options[:try_merge]
     names.each do |name|
       name = name.to_s
       if instance_methods(false).include? name
-        begin
-          code = Ruby2Ruby.translate self, name
-          include Module.new { eval code }
-        rescue NameError
-          m = instance_method name
-          include Module.new { define_method(name) { |*a, &b| m.bind(self).call(*a, &b) } }
-        end
+        mod = Module.new
+        Chainable.copy_method(self, mod, name)
+        include mod
       end
       block ||= Proc.new { super }
       define_method(name, &block)
