@@ -22,6 +22,10 @@ module Chainable
     end
   end
 
+  # This will try to merge into the method, instead of chaining to it (see
+  # README.rdoc). You probably don't want to use this directly but try
+  #   chain_method(:some_method, :try_merge => true) { ... }
+  # instead, which will fall back to chain_method if merge fails.
   def merge_method(*names, &block)
     names.each do |name|
       name = name.to_s
@@ -50,6 +54,7 @@ module Chainable
     result
   end
 
+  # Used internally. See source of Chainbale#auto_chain.
   def self.skip_chain
     return if @auto_chain
     @auto_chain = true
@@ -57,7 +62,13 @@ module Chainable
     @auto_chain = false
   end
 
+  # Given a class, a method name and a proc, it will try to merge the sexp
+  # of the method into the sexp of the proc and return the source code (as
+  # method definition). While doing so, it tries to prevent harm.
+  # 
+  # Raises an ArgumentError on failure.
   def self.wrapped_source klass, name, wrapper
+    # FIXME: refactor the whole thing.
     begin
       inner = unifier.process(parse_tree.parse_tree_for_method(klass, name))
       outer = unifier.process(parse_tree.parse_tree_for_proc(wrapper))
@@ -80,7 +91,7 @@ module Chainable
     src.gsub "# do nothing", "nil"
   end
 
-  def self.unifier
+  def self.unifier # :nodoc:
     return @unifier if @unifier
     @unifier = Unifier.new
     # HACK (stolen from ruby2ruby)
@@ -88,12 +99,14 @@ module Chainable
     @unifier
   end
 
-  def self.parse_tree
+  def self.parse_tree # :nodoc:
     return @parse_tree if @parse_tree
     require "parse_tree"
     @parse_tree = ParseTree.new
   end
 
+  # Tries merge_method on all given methods for klass.
+  # Returns names of the methods that could not be merged.
   def self.try_merge(klass, *names, &wrapper)
     names.reject do |name|
       begin
@@ -105,6 +118,7 @@ module Chainable
     end
   end
 
+  # Copies a method from one module to another.
   def self.copy_method(source_class, target_class, name)
     begin
       target_class.class_eval Ruby2Ruby.translate(source_class, name)
@@ -116,7 +130,7 @@ module Chainable
     end
   end
 
-  def self.sexp_walk sexp, &block
+  def self.sexp_walk sexp, &block # :nodoc:
     return unless sexp.is_a? Sexp
     yield sexp
     sexp.each { |e| sexp_walk e, &block }
@@ -126,4 +140,5 @@ end
 
 Module.class_eval do
   include Chainable
+  private *Chainable.instance_methods(false)
 end
