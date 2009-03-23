@@ -1,8 +1,8 @@
 require "lib/chainable"
 
-describe Chainable do
+describe "Chainable#auto_chain" do
 
-  it "should chain all methods defined inside auto_chain" do
+  it "should chain all methods defined inside given block" do
     a_class = Class.new do
       auto_chain do
         define_method(:foo) { 100 }
@@ -13,7 +13,7 @@ describe Chainable do
     a_class.new.foo.should == 222
   end
 
-  it "should allow defining methods both inside and outside of auto_chain" do
+  it "should allow defining methods both inside and outside of the block" do
     a_class = Class.new do
       define_method(:foo) { 100 }
       chain_method :foo
@@ -23,7 +23,7 @@ describe Chainable do
     a_class.new.foo.should == 222
   end
 
-  it "should allow auto_chain with core functions" do
+  it "should work with core functions" do
     # We screw with String#reverse, this could mess up other specs.
     String.class_eval do
       chain_method :reverse # or we would overwrite the original

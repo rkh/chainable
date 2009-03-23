@@ -2,12 +2,16 @@
 
 This is heavy ruby abuse. It even got the Evil of the Day Award™ from zenspider.
 
+Forks are welcome!
+
 == Thou shalt not use alias_method_chain!
 - http://yehudakatz.com/2009/03/06/alias_method_chain-in-models
 - http://yehudakatz.com/2009/01/18/other-ways-to-wrap-a-method
 - http://www.codefluency.com/articles/2009/01/03/wrapping-a-method-in-ruby
 
 == What it does
+
+=== Chaining Methods
 Chainable is an alternative to alias_method_chain, that uses inheritance, rather
 than aliasing. It does the following when "chaining" a method:
 
@@ -74,15 +78,96 @@ Of course you can do this with any class (or module):
 
 Note that there is a speed advantage when using chain_method without a block
 and doing a "def", since chain_method will use define_method if a block is
-given, which produces slower methods (but makes the method a real closure).
+given, which produces slower methods.
+
+=== Merging Methods
+
+But wait, there is more:
+
+  class Foo
+    def foo
+      10
+    end
+    merge_method :foo do
+      super * 3
+    end
+  end
+
+  puts Ruby2Ruby.translate Foo, :foo
+
+The output:
+
+  def foo
+    (10) * 3
+  end
+
+<b>Before you yell at me about how insane I am, read on!</b>
+
+The library will only allow merging, if it thinks, it is possible:
+
+  class Foo
+    def foo
+      x = 10
+    end
+    merge_method :foo do
+      x = 20
+      super
+      puts x
+    end
+  end
+
+Will give you:
+
+   ArgumentError: cannot merge foo.
+
+Same goes for this one:
+
+   class Foo
+     def foo x
+       puts x
+     end
+     merge_method :foo do
+       super
+     end
+   end
+
+   # => ArgumentError: cannot merge foo.
+
+But where is the fun in that one? You probably don't want your ruby script
+throwing such errors at you.
+
+Enter "try_merge":
+
+  SomeEvilClassWithoutHooks.class_eval do
+    chain_method instance_methods(false), :try_merge => true do
+      old_value = self.value.dup
+      super.tap { observer.notify if old_value != value }
+    end
+    attr_accessor :observer
+  end
+
+  some_evil_instance.observer = MyObserver.new
+
+== When to use it?
+
+As with alias_method_chain, you should use this as seldom as possible. Prefer
+clean inheritance over evil hacks. There actually is only one case one may use
+chainable (or alias_method_chain, for that matter): If there is a class you
+need to modify that is not part of your own code and the instances you deal with
+may already exists when you modify the class. In case you can modify the class
+before instance creation, just create another class inheriting from the first
+one and overwrite new to return instances of the latter.
 
 == Benchmark
 chain_method tends do produce slightly faster methods than alias_method_chain:
+  $ rake benchmark
                                            user     system      total        real
-  chainable (define_method)            0.160000   0.010000   0.170000 (  0.183363)
-  chainable (def & eval)               0.170000   0.010000   0.180000 (  0.177084)
-  alias_method_chain (define_method)   0.570000   0.030000   0.600000 (  0.607330)
-  alias_method_chain (def & eval)      0.170000   0.020000   0.190000 (  0.190048)
+  no wrappers                          0.000000   0.000000   0.000000 (  0.004887)
+  merge_method                         0.000000   0.000000   0.000000 (  0.004830)
+  chain_method (def)                   1.040000   0.350000   1.390000 (  1.392329)
+  chain_method (define_method)         1.150000   0.240000   1.390000 (  1.396007)
+  alias_method_chain (def)             1.210000   0.260000   1.470000 (  1.472633)
+  alias_method_chain (define_method)   3.470000   0.590000   4.060000 (  4.096245)
 
 == Installation
 Add github gems, if you haven't already:
