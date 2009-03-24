@@ -139,7 +139,7 @@ throwing such errors at you.
 Enter "try_merge":
 
   SomeEvilClassWithoutHooks.class_eval do
-    chain_method instance_methods(false), :try_merge => true do
+    chain_method *instance_methods(false), :try_merge => true do
       old_value = self.value.dup
       super.tap { observer.notify if old_value != value }
     end
