@@ -2,7 +2,7 @@ require "lib/chainable"
 
 describe "Chainable#chain_method(..., :try_merge => true)" do
 
-  before :each do
+  before do
     @a_class = Class.new do
       def foo
         :foo
