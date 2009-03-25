@@ -1,8 +1,8 @@
 Gem::Specification.new do |s|
   s.name             = "chainable"
-  s.version          = "0.3.0"
+  s.version          = "0.3.1"
   s.authors          = ["Konstantin Haase"]
-  s.date             = "2009-03-22"
+  s.date             = "2009-03-25"
   s.description      = "never use alias_method_chain, again"
   s.email            = "konstantin.mailinglists@googlemail.com"
   s.extra_rdoc_files = Dir["README.rdoc", "LICENSE", "**/*.rb"]
