@@ -46,7 +46,14 @@ describe "Chainable#merge_method" do
       superclass = Class.new { define_method(:inherited_method) { } }
       Class.new(superclass) { merge_method(:inherited_method) { } }
     end
-    forbidden.each { |block| block.should raise_error(ArgumentError) }
+    forbidden.each do |block|
+      # just for fun
+      if defined? Bacon
+        block.should.raise(ArgumentError)
+      else
+        block.should raise_error(ArgumentError)
+      end
+    end
   end
 
 end

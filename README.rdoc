@@ -1,6 +1,6 @@
 <b>A word of warning:</b>
 
-This is heavy ruby abuse. It even got the Evil of the Day Award™ from zenspider.
+This is heavy ruby abuse. It even got the <b>Evil of the Day Award™</b> from zenspider.
 
 Forks are welcome!
 
@@ -175,3 +175,7 @@ Add github gems, if you haven't already:
 
 Install gem:
   gem install rkh-chainable
+
+== Running test
+
+The specs should work with rspec, mspec and bacon.
