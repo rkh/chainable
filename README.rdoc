@@ -170,10 +170,11 @@ chain_method tends do produce slightly faster methods than alias_method_chain:
   alias_method_chain (define_method)   3.470000   0.590000   4.060000 (  4.096245)
 
 == Installation
-Add github gems, if you haven't already:
-  gem sources -a http://gems.github.com
+From RubyForge:
+  gem install chainable
 
-Install gem:
+From GitHub:
+  gem sources -a http://gems.github.com
   gem install rkh-chainable
 
 == Running test
