@@ -1,5 +1,6 @@
 require "ruby2ruby"
 
+# This mixin will be included in Module.
 module Chainable
 
   # This will "chain" a method (read: push it to a module and include it).
@@ -73,6 +74,8 @@ module Chainable
     end
   end
 
+  # The sexp part of wrapped_source. Note: In rubinius, we could use this directly
+  # rather than generating the source again.
   def self.wrapped_sexp(klass, name, wrapper)
     inner = unified sexp_for(klass, name)
     outer = unified sexp_for(wrapper)
@@ -82,7 +85,8 @@ module Chainable
     s(:defn, name, s(:args), s(:scope, s(:block, outer[3])))
   end
 
-  def self.sexp_walk(sexp, forbidden_locals = [], &block)
+  # Traveling a methods sexp tree. Block will be called for every super.
+  def self.sexp_walk(sexp, forbidden_locals = [], &block) # :yield: sexp
     return [] unless sexp.is_a? Sexp
     local = nil
     case sexp[0]
@@ -101,10 +105,12 @@ module Chainable
     sexp.inject(locals) { |l, e| l + sexp_walk(e, forbidden_locals, &block) }
   end
 
+  # Unify sexp.
   def self.unified sexp
     unifier.process sexp
   end
 
+  # Give a proc, class and method, string or sexp and get a sexp.
   def self.sexp_for a, b = nil
     require "parse_tree"
     case a
@@ -115,10 +121,10 @@ module Chainable
     end
   end
 
+  # Unifier with modifications for Ruby2Ruby. (Stolen from Ruby2Ruby.)
   def self.unifier
     return @unifier if @unifier
     @unifier = Unifier.new
-    # HACK (stolen from ruby2ruby)
     @unifier.processors.each { |p| p.unsupported.delete :cfunc }
     @unifier
   end
@@ -137,12 +143,16 @@ module Chainable
   end
 
   # Copies a method from one module to another.
+  # TODO: This could be solved totally different in Rubinius.
   def self.copy_method(source_class, target_class, name)
     begin
       target_class.class_eval Ruby2Ruby.translate(source_class, name)
     rescue NameError
+      # If we get here, the method is written in C or something. So let's do
+      # some evil magic.
       m = source_class.instance_method name
       target_class.class_eval do
+        # FIXME: the following line raises a SyntaxError in JRuby.
         define_method(name) { |*a, &b| m.bind(self).call(*a, &b) }
       end
     end
