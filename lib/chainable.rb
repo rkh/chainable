@@ -11,7 +11,13 @@ module Chainable
   #
   # It takes the following options:
   #
+  # === try_merge
+  # try_merge will try merge_method for every method given and only chain if
+  # that fails. Default is false.
   # 
+  # === module_reuse
+  # Will try to reuse the last mixin to keep the inheritance chain short.
+  # Default is true.
   def chain_method(*names, &block)
     options = names.grep(Hash).inject(Chainable.default_options) do |a, b|
       a.merge names.delete(b)
