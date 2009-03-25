@@ -67,42 +67,63 @@ module Chainable
   # method definition). While doing so, it tries to prevent harm.
   # 
   # Raises an ArgumentError on failure.
-  def self.wrapped_source klass, name, wrapper
-    # FIXME: refactor the whole thing.
+  def self.wrapped_source(klass, name, wrapper)
     begin
-      inner = unifier.process(parse_tree.parse_tree_for_method(klass, name))
-      outer = unifier.process(parse_tree.parse_tree_for_proc(wrapper))
+      src = Ruby2Ruby.new.process wrapped_sexp(klass, name, wrapper)
+      src.gsub "# do nothing", "nil"
     rescue Exception
       raise ArgumentError, "cannot merge #{name}"
     end
-    raise ArgumentError, "cannot merge #{name}" if inner[2] != s(:args) or outer[2]
-    inner_locals = []
-    sexp_walk(inner) do |e|
-      raise ArgumentError, "cannot merge #{name}" if [:zsuper, :super].include? e[0]
-      inner_locals << e if e[0] == :lvar
-    end
-    sexp_walk(outer) do |e|
-      if inner_locals.include? e or (e[0] == :super and e.length > 1)
-        raise ArgumentError, "cannot merge #{name}"
-      end
-      e.replace inner[3][1] if [:zsuper, :super].include? e[0]
-    end
-    src = Ruby2Ruby.new.process s(:defn, name, s(:args), s(:scope, s(:block, outer[3])))
-    src.gsub "# do nothing", "nil"
   end
 
-  def self.unifier # :nodoc:
+  def self.wrapped_sexp(klass, name, wrapper)
+    inner = unified sexp_for(klass, name)
+    outer = unified sexp_for(wrapper)
+    raise if inner[2] != s(:args) or outer[2]
+    inner_locals = sexp_walk(inner) { raise }
+    sexp_walk(outer, inner_locals) { |e| e.replace inner[3][1] }
+    s(:defn, name, s(:args), s(:scope, s(:block, outer[3])))
+  end
+
+  def self.sexp_walk(sexp, forbidden_locals = [], &block)
+    return [] unless sexp.is_a? Sexp
+    local = nil
+    case sexp[0]
+    when :lvar then local = sexp[1]
+    when :lasgn then local = sexp[1] if sexp[1].to_s =~ /^\w+$/
+    when :zsuper, :super
+      raise if sexp.length > 1
+      yield(sexp)
+    when :call then raise if sexp[2] == :eval
+    end
+    locals = []
+    if local
+      raise if forbidden_locals.include? local
+      locals << local
+    end
+    sexp.inject(locals) { |l, e| l + sexp_walk(e, forbidden_locals, &block) }
+  end
+
+  def self.unified sexp
+    unifier.process sexp
+  end
+
+  def self.sexp_for a, b = nil
+    require "parse_tree"
+    case a
+    when Class, String then ParseTree.translate(a, b)
+    when Proc then ParseTree.new.parse_tree_for_proc(a)
+    when Sexp then a
+    else raise ArgumentError, "no sexp for #{a.inspect}"
+    end
+  end
+
+  def self.unifier
     return @unifier if @unifier
     @unifier = Unifier.new
     # HACK (stolen from ruby2ruby)
     @unifier.processors.each { |p| p.unsupported.delete :cfunc }
     @unifier
-  end
-
-  def self.parse_tree # :nodoc:
-    return @parse_tree if @parse_tree
-    require "parse_tree"
-    @parse_tree = ParseTree.new
   end
 
   # Tries merge_method on all given methods for klass.
@@ -128,12 +149,6 @@ module Chainable
         define_method(name) { |*a, &b| m.bind(self).call(*a, &b) }
       end
     end
-  end
-
-  def self.sexp_walk sexp, &block # :nodoc:
-    return unless sexp.is_a? Sexp
-    yield sexp
-    sexp.each { |e| sexp_walk e, &block }
   end
     
 end
