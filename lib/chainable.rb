@@ -8,13 +8,19 @@ module Chainable
   # Maybe that is not what you want, as methods defined by def tend to be
   # faster. If that is the case, simply don't pass the block and call def
   # after chain_method instead.
+  #
+  # It takes the following options:
+  #
+  # 
   def chain_method(*names, &block)
-    options = names.grep(Hash).inject({}) { |a, b| a.merge names.delete(b) }
+    options = names.grep(Hash).inject(Chainable.default_options) do |a, b|
+      a.merge names.delete(b)
+    end
     names = Chainable.try_merge(self, *names, &block) if options[:try_merge]
     names.each do |name|
       name = name.to_s
       if instance_methods(false).include? name
-        mod = Module.new
+        mod = Chainable.mixin_for(self, name, options[:module_reuse])
         Chainable.copy_method(self, mod, name)
         include mod
       end
@@ -28,6 +34,7 @@ module Chainable
   #   chain_method(:some_method, :try_merge => true) { ... }
   # instead, which will fall back to chain_method if merge fails.
   def merge_method(*names, &block)
+    raise ArgumentError, "no block given" unless block
     names.each do |name|
       name = name.to_s
       raise ArgumentError, "cannot merge #{name}" unless instance_methods(false).include? name
@@ -39,17 +46,36 @@ module Chainable
   # will be called on that method right after it has been defined. This will
   # only affect methods defined for the class (or module) auto_chain has been
   # send to. See README.rdoc or spec/chainable/auto_chain_spec.rb for examples.
-  def auto_chain
-    class << self
-      chain_method :method_added do |name|
-        Chainable.skip_chain { chain_method name }
+  #
+  # auto_chain takes a hash of options, just like chain_method does.
+  def auto_chain options = {}
+    eigenclass = (class << self; self; end)
+    eigenclass.class_eval do
+      chain_method :method_added, :try_merge => false do |name|
+        Chainable.skip_chain { chain_method name, options }
       end
     end
     result = yield
-    class << self
-      remove_method :method_added
-    end
+    eigenclass.class_eval { remove_method :method_added }
     result
+  end
+
+  # Default options for auto_chain and chain_method.
+  #
+  # Example usage:
+  #   Chainable.default_options[:try_merge] = true
+  def self.default_options
+    @default_options ||= { :try_merge => false, :module_reuse => true }
+  end
+
+  # Creates mixin used by chain_method.
+  def self.mixin_for(klass, name, reuse = true)
+    @last_mixin ||= {}
+    if reuse and klass.ancestors[1] == @last_mixin[klass]
+      im = @last_mixin[klass].instance_methods(false)
+      return @last_mixin[klass] unless im.include?(name.to_s)
+    end
+    @last_mixin[klass] = Module.new
   end
 
   # Used internally. See source of Chainbale#auto_chain.
