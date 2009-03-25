@@ -87,6 +87,7 @@ module Chainable
 
   # Traveling a methods sexp tree. Block will be called for every super.
   def self.sexp_walk(sexp, forbidden_locals = [], &block) # :yield: sexp
+    # TODO: Refactor me, I'm ugly!
     return [] unless sexp.is_a? Sexp
     local = nil
     case sexp[0]
