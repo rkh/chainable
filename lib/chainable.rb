@@ -29,10 +29,7 @@ module Chainable
   def merge_method(*names, &block)
     names.each do |name|
       name = name.to_s
-      unless instance_methods(false).include? name
-        define_method(name, &block)
-        next
-      end
+      raise ArgumentError, "cannot merge #{name}" unless instance_methods(false).include? name
       class_eval Chainable.wrapped_source(self, name, block)
     end
   end
