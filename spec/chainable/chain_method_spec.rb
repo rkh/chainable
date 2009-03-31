@@ -37,8 +37,10 @@ describe "Chainable#chain_method" do
   it "should work for core methods" do
     Array.class_eval { chain_method :join }
     ["hello", "world"].join(" ").should == "hello world"
+    Chainable.raise_potential_errors = true
     String.class_eval { chain_method(:inspect) { "%#{super}" } }
     "hello world".inspect.should == '%"hello world"'
+    Chainable.raise_potential_errors = false
   end
 
   it "should define a new method, when block given" do

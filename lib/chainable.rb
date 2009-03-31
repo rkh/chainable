@@ -178,11 +178,23 @@ module Chainable
   def self.store_method(block)
     @method_store ||= []
     @method_store << block
-    @method_store.lenght - 1
+    @method_store.length - 1
   end
 
   def self.call_stored_method(method_id, owner, *args, &block)
     @method_store[method_id].bind(owner).call(*args, &block)
+  end
+
+  def self.raise_potential_errors= value
+    @raise_potential_errors = value
+  end
+
+  def self.raise_potential_errors?
+    @raise_potential_errors ||= false
+  end
+
+  def self.could_raise(error = Exception)
+    raise error if raise_potential_errors?
   end
 
   # Copies a method from one module to another.
@@ -196,6 +208,7 @@ module Chainable
       m = source_class.instance_method name
       target_class.class_eval do
         begin
+          Chainable.could_raise(SyntaxError) # for specs
           eval "define_method(name) { |*a, &b| m.bind(self).call(*a, &b) }"
         rescue SyntaxError # Ruby < 1.8.7, JRuby
           # Really really evil, have to change it.
