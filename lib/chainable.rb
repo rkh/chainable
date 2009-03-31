@@ -195,11 +195,9 @@ module Chainable
       # some evil magic.
       m = source_class.instance_method name
       target_class.class_eval do
-        # FIXME: the following line raises a SyntaxError in JRuby.
-        if RUBY_VERSION >= "1.8.7"
-          # raises SyntaxError in Ruby < 1.8.7
+        begin
           eval "define_method(name) { |*a, &b| m.bind(self).call(*a, &b) }"
-        else
+        rescue SyntaxError # Ruby < 1.8.7, JRuby
           # Really really evil, have to change it.
           method_id = Chainable.store_method(m)
           eval %[
