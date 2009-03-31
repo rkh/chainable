@@ -175,6 +175,16 @@ module Chainable
     end
   end
 
+  def self.store_method(block)
+    @method_store ||= []
+    @method_store << block
+    @method_store.lenght - 1
+  end
+
+  def self.call_stored_method(method_id, owner, *args, &block)
+    @method_store[method_id].bind(owner).call(*args, &block)
+  end
+
   # Copies a method from one module to another.
   # TODO: This could be solved totally different in Rubinius.
   def self.copy_method(source_class, target_class, name)
@@ -186,7 +196,18 @@ module Chainable
       m = source_class.instance_method name
       target_class.class_eval do
         # FIXME: the following line raises a SyntaxError in JRuby.
-        define_method(name) { |*a, &b| m.bind(self).call(*a, &b) }
+        if RUBY_VERSION >= "1.8.7"
+          # raises SyntaxError in Ruby < 1.8.7
+          eval "define_method(name) { |*a, &b| m.bind(self).call(*a, &b) }"
+        else
+          # Really really evil, have to change it.
+          method_id = Chainable.store_method(m)
+          eval %[
+            def #{name}(*a, &b)
+              Chainable.call_stored_method(#{method_id}, self, *a, &b)
+            end
+          ]
+        end
       end
     end
   end
