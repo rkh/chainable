@@ -54,7 +54,7 @@ module Chainable
   # send to. See README.rdoc or spec/chainable/auto_chain_spec.rb for examples.
   #
   # auto_chain takes a hash of options, just like chain_method does.
-  def auto_chain options = {}
+  def auto_chain(options = {})
     eigenclass = (class << self; self; end)
     eigenclass.class_eval do
       chain_method :method_added, :try_merge => false do |name|
@@ -139,12 +139,12 @@ module Chainable
   end
 
   # Unify sexp.
-  def self.unified sexp
+  def self.unified(sexp)
     unifier.process sexp
   end
 
   # Give a proc, class and method, string or sexp and get a sexp.
-  def self.sexp_for a, b = nil
+  def self.sexp_for(a, b = nil)
     require "parse_tree"
     case a
     when Class, String then ParseTree.translate(a, b)
@@ -185,7 +185,7 @@ module Chainable
     @method_store[method_id].bind(owner).call(*args, &block)
   end
 
-  def self.raise_potential_errors= value
+  def self.raise_potential_errors=(value)
     @raise_potential_errors = value
   end
 
@@ -225,7 +225,4 @@ module Chainable
     
 end
 
-Module.class_eval do
-  include Chainable
-  private *Chainable.instance_methods(false)
-end
+Module.send(:include, Chainable)
