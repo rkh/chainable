@@ -2,7 +2,7 @@
 
 This is heavy ruby abuse. It even got the <b>Evil of the Day Award™</b> from zenspider.
 
-Forks are welcome!
+Only works with Ruby 1.8, make sure you have chainable >= 0.4.0.
 
 == Thou shalt not use alias_method_chain!
 - http://yehudakatz.com/2009/03/06/alias_method_chain-in-models
@@ -170,12 +170,8 @@ chain_method tends do produce slightly faster methods than alias_method_chain:
   alias_method_chain (define_method)   3.470000   0.590000   4.060000 (  4.096245)
 
 == Installation
-From RubyForge:
-  gem install chainable
 
-From GitHub:
-  gem sources -a http://gems.github.com
-  gem install rkh-chainable
+  gem install chainable
 
 == Running test
 
